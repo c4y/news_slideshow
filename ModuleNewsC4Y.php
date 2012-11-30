@@ -123,17 +123,6 @@ abstract class ModuleNewsC4Y extends Module
 			}
 		}
 
-		// Menue-Picture for the Slideshow
-		if ($this->showmenupicturesize != '')
-			{
-				$picturesize = deserialize($this->showmenupicturesize);
-
-				if ($picturesize[0] > 0 || $picturesize[1] > 0)
-				{
-					$showmenupicturesize = $picturesize;
-				}
-			}
-
 		while ($objArticles->next())
 		{
 
@@ -154,15 +143,6 @@ abstract class ModuleNewsC4Y extends Module
 			$row['link'] = $this->generateNewsUrl($objArticles, $blnAddArchive);
 			$row['archive'] = $objArticles->archive;
 			$row['showmenupicture'] = $this->showmenupicture;
-
-			if ($this->showmenupicture)
-			{
-				if ($showmenupicturesize)
-				{
-					$objArticles->picturesize = $showmenupicturesize;
-				}
-
-				$row['menupicture'] = $this->generateImage($this->getImage($objArticles->singleSRC, $showmenupicturesize[0], $showmenupicturesize[1], $showmenupicturesize[2]), 'alt');			}
 
 
 			// Display the "read more" button for external/article links
@@ -192,40 +172,23 @@ abstract class ModuleNewsC4Y extends Module
 			$row['commentCount'] = $arrMeta['comments'];
 			$row['timestamp'] = $objArticles->date;
 			$row['author'] = $arrMeta['author'];
-
 			$row['addImage'] = false;
 
-			// Add an image
-			if ($objArticles->addImage && is_file(TL_ROOT . '/' . $objArticles->singleSRC))
-			{
-				if ($imgSize)
-				{
-					$objArticles->size = $imgSize;
-				}
+            $objUrl = \FilesModel::findByPk($objArticles->singleSRC);
+            $size = deserialize($this->imgSize);
 
-				$this->addImageToTemplate($objTemplate, $objArticles->row());
-				$row['image_src'] = $objTemplate->src;
-                $image = $this->generateImage($objTemplate->src, $objArticles->headline);
-                $row['linkImage'] = $this->generateLink($image, $objArticles, $blnAddArchive);
-			}
+    		$src = \Image::get($objUrl->path, $size[0], $size[1], $size[2]);
+            $image = $this->generateImage(TL_FILES_URL . $src, $row['newsHeadline']);
+    		$row['linkImage'] = $this->generateLink($image, $objArticles);
 
-			$objTemplate->enclosure = array();
-
-			// Add enclosures
-			if ($objArticles->addEnclosure)
-			{
-				$this->addEnclosuresToTemplate($objTemplate, $objArticles->row());
-			}
-
-			// HOOK: add custom logic
-			if (isset($GLOBALS['TL_HOOKS']['parseArticles']) && is_array($GLOBALS['TL_HOOKS']['parseArticles']))
-			{
-				foreach ($GLOBALS['TL_HOOKS']['parseArticles'] as $callback)
-				{
-					$this->import($callback[0]);
-					$this->$callback[0]->$callback[1]($objTemplate, $objArticles->row());
-				}
-			}
+            if ($this->showmenupicture)
+            {
+                $size = deserialize($this->showmenupicturesize);
+                $src = \Image::get($objUrl->path, $size[0], $size[1], $size[2]);
+                $image = $this->generateImage(TL_FILES_URL . $src, $row['newsHeadline']);
+                //$row['menupicture'] = $this->generateLink($image, $objArticles);
+                $row['menupicture'] = $image;
+            }
 
 			$items[] = $row;
 		}
@@ -412,6 +375,38 @@ abstract class ModuleNewsC4Y extends Module
 						($objArticle->target ? LINK_NEW_WINDOW : ''),
 						$strLink);
 	}
+
+    public static function addImageToRow($Row, $objArticle)
+	{
+		global $objPage;
+
+		$size = deserialize($Row['size']);
+		$imgSize = getimagesize(TL_ROOT .'/'. $Row['singleSRC']);
+
+        $objUrl = \FilesModel::findByPk($objArticle->singleSRC);
+		$src = \Image::get($objUrl->path, $size[0], $size[1], $size[2]);
+
+		// Image dimensions
+		if (($imgSize = @getimagesize(TL_ROOT .'/'. rawurldecode($src))) !== false)
+		{
+			$Row['arrSize'] = $imgSize;
+			$Row['imgSize'] = ' ' . $imgSize[3];
+		}
+
+		// Image link
+		if ($Row['imageUrl'] != '' && TL_MODE == 'FE')
+		{
+			$Row->href = $Row['imageUrl'];
+			$Row->attributes = '';
+		}
+
+
+
+		// Do not urlEncode() here because getImage() already does (see #3817)
+		$Row['linkImage'] = TL_FILES_URL . $src;
+	}
+
+
 }
 
 

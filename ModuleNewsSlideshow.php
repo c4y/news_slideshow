@@ -161,7 +161,6 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 			$objArticles->limit(max($total, 1), $skipFirst);
 		}
 
-
 		$this->Template->articles = $this->parseArticles($objArticles->execute());
 		$this->Template->archives = $this->news_archives;
         // geparsed wird automatisch am Ende

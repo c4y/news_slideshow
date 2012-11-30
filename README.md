@@ -16,5 +16,8 @@ to Do
 Changelog
 ---------
 
+Version 1.1.3 stable
+Fit für Contao 3
+
 Version 1.1.2 stable
 HTML5 + XHTML - Templates hinzugefügt. Contao 2.11 geprüft.

@@ -51,7 +51,7 @@ var news_slideshow = new Class({
 
   auto: function(){
     if (!this.options.auto) return false;
-    $clear(this.autotimer);
+    clearTimeout(this.autotimer);
     this.autotimer = this.progress.delay(this.options.autointerval, this);
   },
 
@@ -60,7 +60,7 @@ var news_slideshow = new Class({
     this.parent(event, item);
     event.stop();
     this.show(this.items.indexOf(item));
-    $clear(this.autotimer);
+    clearTimeout(this.autotimer);
   },
 
   show: function(index) {
@@ -100,3 +100,12 @@ var news_slideshow = new Class({
   }
 
 });
+
+/*
+ * Get deprecated function back
+ * see http://mootools.net/docs/core/Core/Core#Deprecated-Functions:chk
+ */
+var $chk = function (obj)
+{
+	return !!(obj || obj === 0);
+};

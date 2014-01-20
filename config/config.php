@@ -29,14 +29,6 @@
  */
 
 /**
- * Javascript
- */
-$GLOBALS['TL_JAVASCRIPT'][] = 'system/modules/news_slideshow/html/Fx.MorphList.js';
-$GLOBALS['TL_JAVASCRIPT'][] = 'system/modules/news_slideshow/html/news_slideshow.js';
-$GLOBALS['TL_CSS']['news_slideshow'] 		= 'system/modules/news_slideshow/html/news_slideshow.css';
-
-
-/**
  * Front end modules
  */
 array_insert($GLOBALS['FE_MOD']['news'], 4, array

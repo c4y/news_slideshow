@@ -46,7 +46,6 @@ var news_slideshow = new Class({
       if (this.current) this.show(this.items.indexOf(this.current));
       else if (this.options.auto && this.options.autostart) this.progress();
     }.bind(this) });
-    if ($type(this.options.transition) != 'function') this.options.transition = $lambda(this.options.transition);
   },
 
   auto: function(){
@@ -69,7 +68,7 @@ var news_slideshow = new Class({
     if (image == this.curimage) return;
     image.set('tween', this.options.tween).dispose().inject(this.curimage || this.images.getFirst(), this.curimage ? 'after' : 'before').fade('hide');
     image.getElement('img').setStyle('display', 'block');
-    var trans = this.options.transition.run(null, this).split('-');
+    var trans = this.options.transition.split('-');
     switch(trans[0]){
       case 'slide':
         var dir = $pick(trans[1], 'left');

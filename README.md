@@ -7,14 +7,11 @@ Dies geht nur wenn auch ein Bild hinzugefügt wurde.
 Mit dem Modul "News-Slideshow" wird die Slideshow dargestellt.
 Hier können weitere Parameter vorgenommen werden. 
 
-
-to Do
------
-
-* Benutzerrechte einbauen
-
 Changelog
 ---------
+
+Version 1.1.4 stable
+Anpassungen für Mootools 1.4
 
 Version 1.1.3 stable
 Fit für Contao 3

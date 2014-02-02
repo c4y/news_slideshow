@@ -27,6 +27,7 @@ array_insert($GLOBALS['TL_DCA']['tl_module']['fields'],0,array
 		'label'                   => &$GLOBALS['TL_LANG']['tl_module']['showinfobox'],
 		'exclude'                 => true,
 		'inputType'               => 'checkbox',
+		'sql'					  => "char(1) NOT NULL default '1'"
 	),
 	'showmenupicture'      => array
 	(
@@ -34,6 +35,7 @@ array_insert($GLOBALS['TL_DCA']['tl_module']['fields'],0,array
 		'exclude'                 => true,
 		'inputType'               => 'checkbox',
         'eval'                    => array('submitOnChange'=>true),
+        'sql'					  => "char(1) NOT NULL default '0'"
 	),
 	'duration'      => array
 	(
@@ -41,6 +43,7 @@ array_insert($GLOBALS['TL_DCA']['tl_module']['fields'],0,array
 		'exclude'                 => true,
 		'inputType'               => 'text',
 		'eval'                    => array('maxlength'=>5, 'rgxp'=>'digit'),
+		'sql'					  => "int(10) unsigned NOT NULL default '800'"
 	),
 	'intervall'      => array
 	(
@@ -48,19 +51,22 @@ array_insert($GLOBALS['TL_DCA']['tl_module']['fields'],0,array
 		'exclude'                 => true,
 		'inputType'               => 'text',
 		'eval'                    => array('maxlength'=>5, 'rgxp'=>'digit'),
+		'sql'					  => "int(10) unsigned NOT NULL default '4000'"
 	),
 	'transition'      => array
 	(
 		'label'                   => &$GLOBALS['TL_LANG']['tl_module']['transition'],
 		'exclude'                 => true,
 		'inputType'               => 'select',
-		'options'                  => array('fade', 'slide-left', 'slide-right', 'slide-top', 'slide-bottom' ),
+		'options'                 => array('fade', 'slide-left', 'slide-right', 'slide-top', 'slide-bottom' ),
+		'sql'					  => "varchar(32) NOT NULL default 'fade'"	
 	),
 	'autostart'      => array
 	(
 		'label'                   => &$GLOBALS['TL_LANG']['tl_module']['autostart'],
 		'exclude'                 => true,
 		'inputType'               => 'checkbox',
+		'sql'					  => "char(1) NOT NULL default '1'"
 	),
     'showmenupicturesize' => array
     (
@@ -70,6 +76,6 @@ array_insert($GLOBALS['TL_DCA']['tl_module']['fields'],0,array
         'options'                 => $GLOBALS['TL_CROP'],
         'reference'               => &$GLOBALS['TL_LANG']['MSC'],
         'eval'                    => array('rgxp'=>'digit', 'nospace'=>true, 'helpwizard'=>true),
-	    'save_'
+	    'sql'					  => "varchar(64) NOT NULL default ''"
     ),
 ));

@@ -37,5 +37,6 @@ $GLOBALS['TL_DCA']['tl_news']['subpalettes']['addImage'] = 'news_slideshow,' . $
 $GLOBALS['TL_DCA']['tl_news']['fields']['news_slideshow'] = array (
   	'label'                   => &$GLOBALS['TL_LANG']['tl_news']['news_slideshow'],
 	'exclude'                 => true,
-	'inputType'               => 'checkbox'
+	'inputType'               => 'checkbox',
+	'sql'					  => "char(1) NOT NULL default ''"
 );

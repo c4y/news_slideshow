@@ -71,7 +71,7 @@ var news_slideshow = new Class({
     var trans = this.options.transition.split('-');
     switch(trans[0]){
       case 'slide':
-        var dir = $pick(trans[1], 'left');
+        var dir = Array.pick(trans[1], 'left');
         var prop = (dir == 'left' || dir == 'right') ? 'left' : 'top';
         image.fade('show').setStyle(prop, image['offset' + (prop == 'left' ? 'Width' : 'Height')] * ((dir == 'bottom' || dir == 'right') ? 1 : -1)).tween(prop, 0);
         break;

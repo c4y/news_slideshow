@@ -160,7 +160,19 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 		{
 			$objArticles->limit(max($total, 1), $skipFirst);
 		}
-
+		
+		
+		/**
+		 * Javascript
+		 */
+		if(!in_array('system/modules/news_slideshow/html/news_slideshow.js', $GLOBALS['TL_JAVASCRIPT']))
+		{
+			$GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/Fx.MorphList.js';
+			$GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/news_slideshow.js';
+			$GLOBALS['TL_CSS']['news_slideshow'] 		= 'system/modules/news_slideshow/html/news_slideshow.css';
+		}
+		
+		
 		$this->Template->articles = $this->parseArticles($objArticles->execute());
 		$this->Template->archives = $this->news_archives;
         // geparsed wird automatisch am Ende

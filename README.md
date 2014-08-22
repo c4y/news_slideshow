@@ -9,6 +9,9 @@ Hier können weitere Parameter vorgenommen werden.
 
 Changelog
 ---------
+Version 1.1.5 stable
+Anpassungen für Contao 3.2, Contao 3.3
+Umstellung auf Models, UUID, auto_items
 
 Version 1.1.4 stable
 Anpassungen für Mootools 1.4

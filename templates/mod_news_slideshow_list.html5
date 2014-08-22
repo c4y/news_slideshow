@@ -10,7 +10,8 @@ window.addEvent('domready', function(){
 
 <<?php echo $this->hl; ?>><?php echo $this->headline; ?></<?php echo $this->hl; ?>>
 <?php endif; ?>
-<?php echo $this->articles; ?> 
+
+<?php echo $this->articles; ?>
 
 </div>
 <!-- indexer::continue -->

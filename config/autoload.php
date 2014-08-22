@@ -16,8 +16,12 @@
  */
 ClassLoader::addClasses(array
 (
-	'ModuleNewsC4Y'       => 'system/modules/news_slideshow/ModuleNewsC4Y.php',
+    // Module
 	'ModuleNewsSlideshow' => 'system/modules/news_slideshow/ModuleNewsSlideshow.php',
+    'ModuleNewsC4Y'       => 'system/modules/news_slideshow/ModuleNewsC4Y.php',
+
+    // Models
+    'NewsSlideshowModel'  => 'system/modules/news_slideshow/models/NewsSlideshowModel.php',
 ));
 
 

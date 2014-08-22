@@ -1,43 +1,30 @@
-<?php if (!defined('TL_ROOT')) die('You cannot access this file directly!');
+<?php
 
 /**
  * Contao Open Source CMS
- * Copyright (C) 2005-2011 Leo Feyer
  *
- * Formerly known as TYPOlight Open Source CMS.
+ * Copyright (c) 2005-2014 Leo Feyer
  *
- * This program is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either
- * version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this program. If not, please visit the Free
- * Software Foundation website at <http://www.gnu.org/licenses/>.
- *
- * PHP version 5
- * @copyright  Oliver Lohoff 2011
- * @author     Oliver Lohoff <http://www.contao4you.de>
- * @package    News-Galerie
- * @license    LGPL
- * @filesource
+ * @package News
+ * @link    https://contao.org
+ * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
+ */
+
+
+/**
+ * Run in a custom namespace, so the class can be replaced
  */
 
 
 /**
  * Class ModuleNewsList
  *
- * Frontend module "newsgalerie".
- * @copyright  Oliver Lohoff, contao4you 2011
+ * Frontend module "ModuleNewsSlideshow".
+ * @copyright  Oliver Lohoff, contao4you 2014
  * @author     Oliver Lohoff <http://www.contao4you.de>
  * @package    newsgalerie
  */
-class ModuleNewsSlideshow extends ModuleNewsC4Y
+class ModuleNewsSlideshow extends \ModuleNewsC4Y
 {
 
 	/**
@@ -55,11 +42,9 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 	{
 		if (TL_MODE == 'BE')
 		{
-			$objTemplate = new BackendTemplate('be_wildcard');
+			$objTemplate = new \BackendTemplate('be_wildcard');
 
-			$objTemplate->wildcard = '### NEWS Slideshow ###';
-			$objTemplate->title = $this->headline;
-			$objTemplate->id = $this->id;
+			$objTemplate->wildcard = '### News-Slideshow ###';
 			$objTemplate->link = $this->name;
 			$objTemplate->href = 'contao/main.php?do=themes&amp;table=tl_module&amp;act=edit&amp;id=' . $this->id;
 
@@ -69,7 +54,7 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 		$this->news_archives = $this->sortOutProtected(deserialize($this->news_archives));
 
 		// Return if there are no archives
-		if (!is_array($this->news_archives) || count($this->news_archives) < 1)
+		if (!is_array($this->news_archives) || empty($this->news_archives))
 		{
 			return '';
 		}
@@ -79,36 +64,51 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 
 
 	/**
-	 * Generate module
+	 * Generate the module
 	 */
 	protected function compile()
 	{
-		$time = time();
-		$skipFirst = intval($this->skipFirst);
-		$offset = 0;
+		$offset = intval($this->skipFirst);
 		$limit = null;
 
-		$this->Template->count = ++$count;
-					
 		// Maximum number of items
-		if ($this->news_numberOfItems > 0)
+		if ($this->numberOfItems > 0)
 		{
-			$limit = $this->news_numberOfItems;
+			$limit = $this->numberOfItems;
 		}
 
+		// Handle featured news
+		if ($this->news_featured == 'featured')
+		{
+			$blnFeatured = true;
+		}
+		elseif ($this->news_featured == 'unfeatured')
+		{
+			$blnFeatured = false;
+		}
+		else
+		{
+			$blnFeatured = null;
+		}
+
+		$this->Template->articles = array();
+		$this->Template->empty = $GLOBALS['TL_LANG']['MSC']['emptyList'];
+
 		// Get the total number of items
-		$objTotal = $this->Database->execute("
-		        SELECT COUNT(*) AS total
-		        FROM tl_news
-		        WHERE pid IN(" . implode(',', array_map('intval', $this->news_archives)) . ")" . (($this->news_featured == 'featured') ? "
-		        AND featured=1" : (($this->news_featured == 'unfeatured') ? "
-		        AND featured=''" : "")) . (!BE_USER_LOGGED_IN ? " AND (start='' OR start<$time) AND (stop='' OR stop>$time) AND published=1" : "") . "
-		        AND news_slideshow=1
-		        ORDER BY date DESC");
-		$total = $objTotal->total - $skipFirst;
+
+        // contao4you begin
+		$intTotal = \NewsSlideshowModel::countPublishedByPids($this->news_archives, $blnFeatured);
+        // contao4you end
+
+		if ($intTotal < 1)
+		{
+			return;
+		}
+
+		$total = $intTotal - $offset;
 
 		// Split the results
-		if ($this->perPage > 0 && (!isset($limit) || $this->news_numberOfItems > $this->perPage))
+		if ($this->perPage > 0 && (!isset($limit) || $this->numberOfItems > $this->perPage))
 		{
 			// Adjust the overall limit
 			if (isset($limit))
@@ -116,67 +116,70 @@ class ModuleNewsSlideshow extends ModuleNewsC4Y
 				$total = min($limit, $total);
 			}
 
-			$page = $this->Input->get('page') ? $this->Input->get('page') : 1;
+			// Get the current page
+			$id = 'page_n' . $this->id;
+			$page = \Input::get($id) ?: 1;
 
-			// Check the maximum page number
-			if ($page > ($total/$this->perPage))
+			// Do not index or cache the page if the page number is outside the range
+			if ($page < 1 || $page > max(ceil($total/$this->perPage), 1))
 			{
-				$page = ceil($total/$this->perPage);
+				global $objPage;
+				$objPage->noSearch = 1;
+				$objPage->cache = 0;
+
+				// Send a 404 header
+				header('HTTP/1.1 404 Not Found');
+				return;
 			}
 
-			// Limit and offset
+			// Set limit and offset
 			$limit = $this->perPage;
-			$offset = (max($page, 1) - 1) * $this->perPage;
+			$offset += (max($page, 1) - 1) * $this->perPage;
+			$skip = intval($this->skipFirst);
 
 			// Overall limit
-			if ($offset + $limit > $total)
+			if ($offset + $limit > $total + $skip)
 			{
-				$limit = $total - $offset;
+				$limit = $total + $skip - $offset;
 			}
 
 			// Add the pagination menu
-			$objPagination = new Pagination($total, $this->perPage);
+			$objPagination = new \Pagination($total, $this->perPage, \Config::get('maxPaginationLinks'), $id);
 			$this->Template->pagination = $objPagination->generate("\n  ");
 		}
 
-		$objArticles = $this->Database->prepare("
-		    SELECT *, author AS authorId,
-		    (SELECT title FROM tl_news_archive WHERE tl_news_archive.id=tl_news.pid) AS archive,
-		    (SELECT jumpTo FROM tl_news_archive WHERE tl_news_archive.id=tl_news.pid) AS parentJumpTo,
-		    (SELECT name FROM tl_user WHERE id=author) AS author
-		    FROM tl_news
-		    WHERE pid IN(" . implode(',', array_map('intval', $this->news_archives)) . ")" . (($this->news_featured == 'featured') ? "
-		    AND featured=1" : (($this->news_featured == 'unfeatured') ? "
-		    AND featured=''" : "")) . (!BE_USER_LOGGED_IN ? " AND (start='' OR start<$time) AND (stop='' OR stop>$time) AND published=1" : "") . "
-		    AND news_slideshow=1
-		    ORDER BY date DESC");
-
-		// Limit the result
+		// Get the items
 		if (isset($limit))
 		{
-			$objArticles->limit($limit, $offset + $skipFirst);
+            // contao4you begin
+			$objArticles = \NewsSlideshowModel::findPublishedByPids($this->news_archives, $blnFeatured, $limit, $offset);
+            // contao4you end
 		}
-		elseif ($skipFirst > 0)
+		else
 		{
-			$objArticles->limit(max($total, 1), $skipFirst);
+            // contao4you begin
+			$objArticles = \NewsSlideshowModel::findPublishedByPids($this->news_archives, $blnFeatured, 0, $offset);
+            // contao4you end
 		}
-		
-		
-		/**
-		 * Javascript
-		 */
-		if(!in_array('system/modules/news_slideshow/html/news_slideshow.js', $GLOBALS['TL_JAVASCRIPT']))
+
+        // contao4you begin
+        /**
+         * Javascript
+         */
+        if(!in_array('system/modules/news_slideshow/html/news_slideshow.js', $GLOBALS['TL_JAVASCRIPT']))
+        {
+            $GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/Fx.MorphList.js';
+            $GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/news_slideshow.js';
+            $GLOBALS['TL_CSS']['news_slideshow']    = 'system/modules/news_slideshow/html/news_slideshow.css';
+        }
+        // contao4you end
+
+		// Add the articles
+		if ($objArticles !== null)
 		{
-			$GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/Fx.MorphList.js';
-			$GLOBALS['TL_JAVASCRIPT'][] 			= 'system/modules/news_slideshow/html/news_slideshow.js';
-			$GLOBALS['TL_CSS']['news_slideshow'] 		= 'system/modules/news_slideshow/html/news_slideshow.css';
+			$this->Template->articles = $this->parseArticles($objArticles);
 		}
-		
-		
-		$this->Template->articles = $this->parseArticles($objArticles->execute());
+
 		$this->Template->archives = $this->news_archives;
-        // geparsed wird automatisch am Ende
 	}
 }
-
-?>

@@ -54,8 +54,6 @@ abstract class ModuleNewsC4Y extends \ModuleNews
         $article = $objArticle->row();
         // contao4you end
 
-        $article["id"] = $this->id;
-
 		$article["class"] = (($objArticle->cssClass != '') ? ' ' . $objArticle->cssClass : '') . $strClass;
 		$article["newsHeadline"] = $objArticle->headline;
 		$article["subHeadline"] = $objArticle->subheadline;
@@ -181,6 +179,7 @@ abstract class ModuleNewsC4Y extends \ModuleNews
 		}
 
         $objTemplate->id = $this->id;
+        $objTemplate->showinfobox = $this->showinfobox;
         $objTemplate->articles = $arrArticles;
 
 		return $objTemplate->parse();
